@@ -37,7 +37,7 @@ extends:
     targetApp: 'containerapp'
     buildType: 'dockerBuild'
     registry: 'ACR'
-    sourcecode:'github'
+    sourcecode: github
 #steps:
 #- task: Docker@2
 #  inputs:
