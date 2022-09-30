@@ -3,17 +3,39 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- master
+name: ${{ parameters.Branch }}$(Rev:.r) 
+
+parameters:
+- name: Branch
+  displayName: Branch to Deploy
+  type: string
+  default: develop
 
 pool:
   vmImage: ubuntu-latest
 variables:
   registry:  adipricerpocregistry.azurecr.io
-  image: adipricerpoc
-  imageTag: $(Build.BuildId)
+  DOCKER-REPOSITORY-NAME: adipricerpoc
+  dockerfilePath: '**/Dockerfile'
+  azureSubscription: 'sp-dev-jenkins'
+  dockerRegistryServiceConnection: 'acr-adipricer-poc'
 
-
+resources: 
+   repositories:
+    - repository: templates
+      type: git
+      name: enterpriseapps-devops/corpit-templates-library
+      ref: refs/heads/develop
+    - repository: sourcecoderepo
+      endpoint: SourceCodeRepoCheckOut
+      type: git
+      name: enterpriseapps-devops /adcdriver
+      ref: refs/heads/$(branchName)
+extends:
+  template: pipeline-dev-blob-common.yml@templates
+  parameters:
+    targetApp: 'webApp'
+    buildType: 'Yarn'
 steps:
 - task: Docker@2
   inputs:
