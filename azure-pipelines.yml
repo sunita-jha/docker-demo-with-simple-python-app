@@ -19,6 +19,8 @@ variables:
   dockerfilePath: '**/Dockerfile'
   azureSubscription: 'sp-dev-jenkins'
   dockerRegistryServiceConnection: 'acr-adipricer-poc'
+  containerappname: 'adi-poc-containerapp'
+  resourcegroupname: adi-eus-devops-poc-rg
 
 resources: 
    repositories:
