@@ -21,6 +21,7 @@ variables:
   dockerRegistryServiceConnection: 'acr-adipricer-poc'
   containerappname: 'adi-poc-containerapp'
   resourcegroupname: adi-eus-devops-poc-rg
+  containername: adipricerpoc
 
 resources: 
    repositories:
