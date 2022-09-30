@@ -31,13 +31,31 @@ resources:
  #    type: github
  #     name: sunita-jha/docker-demo-with-simple-python-app
  #     ref: refs/heads/$(branchName)
-extends:
-  template: pipeline-dev-docker-common.yml@templates
-  parameters:
-    targetApp: 'containerapp'
-    buildType: 'dockerBuild'
-    registry: 'ACR'
-    sourcecode: github
+#extends:
+ # template: pipeline-dev-docker-common.yml@templates
+  #parameters:
+   # targetApp: 'containerapp'
+    #buildType: 'dockerBuild'
+    #registry: 'ACR'
+    #sourcecode: github
+steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: 'acr-adipricer-poc'
+    repository: 'adipricerpoc'
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      latest
+      $(Build.BuildId)
+- task: Docker@2
+  inputs:
+    containerRegistry: 'acr-adipricer-poc'
+    repository: 'adipricerpoc'
+    command: 'push'
+    tags: |
+      latest
+      $(Build.BuildId)
 #steps:
 #- task: Docker@2
 #  inputs:
