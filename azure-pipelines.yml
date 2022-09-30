@@ -9,7 +9,7 @@ parameters:
 - name: Branch
   displayName: Branch to Deploy
   type: string
-  default: develop
+  default: master
 
 pool:
   vmImage: ubuntu-latest
@@ -25,34 +25,35 @@ resources:
     - repository: templates
       type: git
       name: enterpriseapps-devops/corpit-templates-library
-      ref: refs/heads/develop
+      ref: refs/heads/sjha3-containerapp
     - repository: sourcecoderepo
       endpoint: SourceCodeRepoCheckOut
-      type: git
-      name: enterpriseapps-devops /adcdriver
+      type: github
+      name: sunita-jha/docker-demo-with-simple-python-app
       ref: refs/heads/$(branchName)
 extends:
-  template: pipeline-dev-blob-common.yml@templates
+  template: pipeline-dev-docker-common.yml@templates
   parameters:
-    targetApp: 'webApp'
-    buildType: 'Yarn'
-steps:
-- task: Docker@2
-  inputs:
-    containerRegistry: 'acr-adipricer-poc'
-    repository: 'adipricerpoc'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    tags: |
-      latest
-      $(Build.BuildId)
+    targetApp: 'containerapp'
+    buildType: 'dockerBuild'
+    registry: 'ACR'
+#steps:
+#- task: Docker@2
+#  inputs:
+#    containerRegistry: 'acr-adipricer-poc'
+#     repository: 'adipricerpoc'
+#     command: 'buildAndPush'
+#     Dockerfile: '**/Dockerfile'
+#   tags: |
+#     latest
+#     $(Build.BuildId)
 
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'sp-dev-jenkins'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az config set extension.use_dynamic_install=yes_without_prompt
-      az containerapp update -n adi-poc-containerapp -g adi-eus-devops-poc-rg  --image $(registry)/$(image):$(imageTag) --container-name adipricerpoc   
+#- task: AzureCLI@2
+# inputs:
+#   azureSubscription: 'sp-dev-jenkins'
+#   scriptType: 'bash'
+#   scriptLocation: 'inlineScript'
+#   inlineScript: |
+#     az config set extension.use_dynamic_install=yes_without_prompt
+#     az containerapp update -n adi-poc-containerapp -g adi-eus-devops-poc-rg  --image $(registry)/$(image):$(imageTag) --container-name adipricerpoc   
 
