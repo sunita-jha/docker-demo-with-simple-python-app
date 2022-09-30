@@ -26,11 +26,11 @@ resources:
       type: git
       name: enterpriseapps-devops/corpit-templates-library
       ref: refs/heads/sjha3-containerapp
-    - repository: sourcecoderepo
-      endpoint: SourceCodeRepoCheckOut
-      type: github
-      name: sunita-jha/docker-demo-with-simple-python-app
-      ref: refs/heads/$(branchName)
+ #   - repository: sourcecoderepo
+ #     endpoint: SourceCodeRepoCheckOut
+ #    type: github
+ #     name: sunita-jha/docker-demo-with-simple-python-app
+ #     ref: refs/heads/$(branchName)
 extends:
   template: pipeline-dev-docker-common.yml@templates
   parameters:
