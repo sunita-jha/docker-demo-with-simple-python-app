@@ -22,7 +22,7 @@ variables:
   containerappname: 'adi-poc-containerapp-two-acr'
   resourcegroupname: adi-eus-devops-poc-rg
   containername: adipricerpoc-oneacr
-  targetRegistry: adipricerpocregistry
+  # targetRegistry: adipricerpocregistry
   sourceRegistry: sunitademo
   targetRepo : importedimage
   sourceRepo : sunitajha2
@@ -38,5 +38,5 @@ steps:
       az config set extension.use_dynamic_install=yes_without_prompt
       az containerapp update -n adi-poc-containerapp-two-acr -g adi-eus-devops-poc-rg \
           --image $(sourceRegistry).azurecr.io/$(sourceRepo):11 \
-          --container-name adipricerpoc-oneacr 
+          --container-name $(containername) 
  
