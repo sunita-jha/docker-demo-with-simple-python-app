@@ -1,63 +1,78 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
-name: ${{ parameters.Branch }}$(Rev:.r) 
+trigger:
+- main
 
-parameters:
-- name: Branch
-  displayName: Branch to Deploy
-  type: string
-  default: master
+resources:
+- repo: self
 
-pool:
-  vmImage: ubuntu-latest
 variables:
-  registry:  adipricerpocregistry.azurecr.io
-  DOCKER-REPOSITORY-NAME: adipricerpoc
-  dockerfilePath: '**/Dockerfile'
-  azureSubscription: 'sp-dev-jenkins'
-  dockerRegistryServiceConnection: 'acr-adipricer-poc'
-  containerappname: 'testapp'
-  resourcegroupname: adi-eus-devops-poc-rg
-  containername: adipricerpoc
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: 'myregistrydemo1'
+  imageRepository: 'sampleappdemo'
+  containerRegistry: 'myregistrydemo1.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/app/Dockerfile'
+  tag: '$(Build.BuildId)'
 
-resources: 
-   repositories:
-    - repository: templates
-      type: git
-      name: enterpriseapps-devops/corpit-templates-library
-      ref: refs/heads/sjha3-containerapp
- #   - repository: sourcecoderepo
- #     endpoint: SourceCodeRepoCheckOut
- #    type: github
- #     name: sunita-jha/docker-demo-with-simple-python-app
- #     ref: refs/heads/$(branchName)
-extends:
-  template: pipeline-dev-docker-common.yml@templates
-  parameters:
-    targetApp: 'containerapp'
-    buildType: 'dockerBuild'
-    registry: 'ACR'
-    sourcecode: github
-#steps:
-#- task: Docker@2
-#  inputs:
-#    containerRegistry: 'acr-adipricer-poc'
-#     repository: 'adipricerpoc'
-#     command: 'buildAndPush'
-#     Dockerfile: '**/Dockerfile'
-#   tags: |
-#     latest
-#     $(Build.BuildId)
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
 
-#- task: AzureCLI@2
-# inputs:
-#   azureSubscription: 'sp-dev-jenkins'
-#   scriptType: 'bash'
-#   scriptLocation: 'inlineScript'
-#   inlineScript: |
-#     az config set extension.use_dynamic_install=yes_without_prompt
-#     az containerapp update -n adi-poc-containerapp -g adi-eus-devops-poc-rg  --image $(registry)/$(image):$(imageTag) --container-name adipricerpoc   
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          latest
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/kubernetes'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+- stage: Deploy
+  displayName: Deploy to dev
+  dependsOn: Build
+  variables:
+    acrsecret: k8examplesacrauth
+  jobs:
+    - job: Deploy
+      displayName: Deploy to AKS
+      pool:
+        vmImage: $(vmImageName)
+      steps:
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          artifactName: 'manifests'
+          targetPath: '$(Pipeline.Workspace)/manifests'
+      - task: KubernetesManifest@0
+        inputs:
+          action: 'createSecret'
+          kubernetesServiceConnection: 'kubernetesdemo'
+          namespace: 'default'
+          secretType: 'dockerRegistry'
+          secretName: '$(acrsecret)'
+          dockerRegistryEndpoint: 'myregistrydemo1'
 
+      - task: KubernetesManifest@0
+        inputs:
+          action: 'deploy'
+          kubernetesServiceConnection: 'kubernetesdemo'
+          namespace: 'default'
+          manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/services.yml
