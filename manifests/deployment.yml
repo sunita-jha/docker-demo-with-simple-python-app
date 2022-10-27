@@ -16,4 +16,4 @@ spec:
         - name: sampleappdemo 
           image: myregistrydemo1.azurecr.io/sampleappdemo
           ports:
-          - containerPort: 80
+          - containerPort: 8080
