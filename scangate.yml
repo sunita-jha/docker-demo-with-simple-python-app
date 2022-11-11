@@ -23,7 +23,7 @@ variables:
   - name: tag
     value: '$(Build.BuildId)'
   - name: waitForScanResultsAfterPushInMinutes
-    value: '5'
+    value: '2'
   # - name: dockerfilePath
   #   value: '$(Build.SourcesDirectory)/Dockerfile'
 
