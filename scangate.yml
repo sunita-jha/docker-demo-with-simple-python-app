@@ -15,15 +15,17 @@ pool:
 
 variables:
   - name: registryName
-    value: 'acrcponsndev'
+    value: 'myregistrydemo1'
   - name: imageName
-    value: 'app-example-vulnerabilities'
+    value: 'scangate'
   - name: azureSubscription
-    value: 'service-endpoint-cpons-dev'
+    value: 'Free Trial (7efefb00-e17c-4d85-a4ce-d13264a86786)'
   - name: tag
     value: '$(Build.BuildId)'
   - name: waitForScanResultsAfterPushInMinutes
     value: '5'
+  # - name: dockerfilePath
+  #   value: '$(Build.SourcesDirectory)/Dockerfile'
 
 stages:
 - stage: Build_and_Publish
