@@ -86,19 +86,19 @@ Write-Host "Image Digest: $imageDigest"
 
 # All images scan summary ARG query.
 $query = "securityresources
- | where type == 'microsoft.security/assessments/subassessments'
- | where id matches regex  '(.+?)/providers/Microsoft.ContainerRegistry/registries/(.+)/providers/Microsoft.Security/assessments/dbd0cb49-b563-45e7-9724-889e799fa648/'
- | extend registryResourceId = tostring(split(id, '/providers/Microsoft.Security/assessments/')[0])
- | extend registryResourceName = tostring(split(registryResourceId, '/providers/Microsoft.ContainerRegistry/registries/')[1])
- | extend imageDigest = tostring(properties.additionalData.imageDigest)
- | extend repository = tostring(properties.additionalData.repositoryName)
- | extend scanFindingSeverity = tostring(properties.status.severity), scanStatus = tostring(properties.status.code)
- | summarize scanFindingSeverityCount = count() by scanFindingSeverity, scanStatus, registryResourceId, registryResourceName, repository, imageDigest
- | summarize  severitySummary = make_bag(pack(scanFindingSeverity, scanFindingSeverityCount)) by registryResourceId, registryResourceName, repository, imageDigest, scanStatus"
+| where type == 'microsoft.security/assessments/subassessments'
+| where id matches regex '(.+?)/providers/Microsoft.Security/assessments/dbd0cb49-b563-45e7-9724-889e799fa648/'
+| parse id with registryResourceId '/providers/Microsoft.Security/assessments/' *
+| parse registryResourceId with * "/providers/Microsoft.ContainerRegistry/registries/" registryName
+| extend imageDigest = tostring(properties.additionalData.imageDigest)
+| extend repository = tostring(properties.additionalData.repositoryName)
+| extend scanFindingSeverity = tostring(properties.status.severity), scanStatus = tostring(properties.status.code)
+| summarize scanFindingSeverityCount = count() by scanFindingSeverity, scanStatus, registryResourceId, registryName, repository, imageDigest
+| summarize severitySummary = make_bag(pack(scanFindingSeverity, scanFindingSeverityCount)) by registryResourceId, registryName, repository, imageDigest, scanStatus"
  
 # Add filter to get scan summary for specific provided image
-$filter = "| where imageDigest =~ '$imagedigest' and repository =~ '$repository' and registryResourceName =~ '$registryname'" 
-$query  = @($query, $filter) | out-string 
+$filter = "| where imageDigest == '<ImageDigest>' and repository == '<ImageRepository>' and registryResourceId endswith '/<ImageRegistryName>'" 
+#$query  = @($query, $filter) | out-string 
 
 Write-Host "Query: $query"
 
